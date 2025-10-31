@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
+
 interface KycDocument {
   docType?: string;
   url?: string;
@@ -44,11 +46,12 @@ export default function AdminKycRequests() {
   const [selectedDocs, setSelectedDocs] = useState<KycDocument[]>([]);
   const [openDocs, setOpenDocs] = useState(false);
 
-  // Dialog states
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchKycRequests();
@@ -79,8 +82,7 @@ export default function AdminKycRequests() {
       await axios.patch(
         `${import.meta.env.VITE_NODE_URI}api/v1/borrower/kyc-status/${userId}`,
         {
-          signupStage:
-            status === "approved" ? "completed" : "kyc_pending",
+          signupStage: status === "approved" ? "completed" : "kyc_pending",
           kyc_status: status,
           ...(reason ? { rejectionReason: reason } : {}),
         },
@@ -94,13 +96,6 @@ export default function AdminKycRequests() {
     }
   };
 
-  const pending = kycRequests.filter(
-    (u) => u.kyc.kyc_status === "under_review"
-  );
-  const approved = kycRequests.filter((u) => u.kyc.kyc_status === "approved");
-  const rejected = kycRequests.filter((u) => u.kyc.kyc_status === "rejected");
-  console.log(approved,rejected,pending,kycRequests)
-
   const handleApproveClick = (userId: string) => {
     setCurrentUserId(userId);
     setConfirmDialogOpen(true);
@@ -111,6 +106,29 @@ export default function AdminKycRequests() {
     setRejectReason("");
     setRejectDialogOpen(true);
   };
+
+  // Filtered by tabs
+  const pending = kycRequests.filter((u) => u.kyc.kyc_status === "under_review");
+  const approved = kycRequests.filter((u) => u.kyc.kyc_status === "approved");
+  const rejected = kycRequests.filter((u) => u.kyc.kyc_status === "rejected");
+
+  // =====================
+  // Filter by search
+  // =====================
+  const filterBySearch = (users: User[]) =>
+    users.filter((u) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        u.profile.fullName.toLowerCase().includes(term) ||
+        u.profile.email.toLowerCase().includes(term) ||
+        u.phone.toLowerCase().includes(term) ||
+        u.profile.address.toLowerCase().includes(term) ||
+        u.profile.city.toLowerCase().includes(term) ||
+        u.profile.state.toLowerCase().includes(term) ||
+        u.kyc.kyc_status.toLowerCase().includes(term) ||
+        (u.kyc.rejectionReason?.toLowerCase().includes(term) ?? false)
+      );
+    });
 
   const renderUserCard = (user: User, showActions = false) => (
     <div
@@ -123,11 +141,10 @@ export default function AdminKycRequests() {
       </p>
       <p className="text-sm text-muted-foreground">Phone: {user.phone}</p>
       <p className="text-sm text-muted-foreground">
-        Address: {user.profile.address}, {user.profile.city},{" "}
-        {user.profile.state}
+        Address: {user.profile.address}, {user.profile.city}, {user.profile.state}
       </p>
       {user.kyc.kyc_status === "rejected" && user.kyc.rejectionReason && (
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-destructive break-words whitespace-pre-wrap">
           Reason for Rejection: {user.kyc.rejectionReason}
         </p>
       )}
@@ -163,22 +180,48 @@ export default function AdminKycRequests() {
   );
 
   return (
-    <div className="">
+    <div className="p-4 font-robbert">
       <h1 className="text-xl font-semibold mb-4">KYC Requests</h1>
+
+      {/* Search bar */}
+        <div className="mb-6 flex items-center gap-2 max-w-md bg-gray-50 border rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+  <Search className="w-4 h-4 text-gray-500" />
+  <Input
+    placeholder="Search by name, amount, status, or reason..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="border-none bg-transparent shadow-none focus:ring-0 focus:outline-none focus-visible:ring-0"
+  />
+</div>
+
       <Tabs defaultValue="pending">
         <TabsList className="rounded-full mb-6 gap-2">
-          <TabsTrigger value="pending" className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]">Pending {`(${pending.length})`}</TabsTrigger>
-          <TabsTrigger value="approved" className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]">Approved {`(${approved.length})`}</TabsTrigger>
-          <TabsTrigger value="rejected" className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]">Rejected {`(${rejected.length})`}</TabsTrigger>
+          <TabsTrigger
+            value="pending"
+            className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]"
+          >
+            Pending {`(${filterBySearch(pending).length})`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="approved"
+            className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]"
+          >
+            Approved {`(${filterBySearch(approved).length})`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="rejected"
+            className="w-25 h-8 py-1.25 px-3 data-[state=active]:bg-black data-[state=active]:text-white rounded-full transition-all ease-in-out duration-300 bg-[#F3F3F5]"
+          >
+            Rejected {`(${filterBySearch(rejected).length})`}
+          </TabsTrigger>
         </TabsList>
-
 
         <TabsContent value="pending">
           {loading ? (
             <p>Loading...</p>
-          ) : pending.length > 0 ? (
+          ) : filterBySearch(pending).length > 0 ? (
             <div className="flex flex-wrap gap-4">
-              {pending.map((u) => renderUserCard(u, true))}
+              {filterBySearch(pending).map((u) => renderUserCard(u, true))}
             </div>
           ) : (
             <p>No pending requests</p>
@@ -188,24 +231,24 @@ export default function AdminKycRequests() {
         <TabsContent value="approved">
           {loading ? (
             <p>Loading...</p>
-          ) : approved.length > 0 ? (
+          ) : filterBySearch(approved).length > 0 ? (
             <div className="flex flex-wrap gap-4">
-              {approved.map((u) => renderUserCard(u))}
+              {filterBySearch(approved).map((u) => renderUserCard(u))}
             </div>
           ) : (
-            <p>No Approved requests</p>
+            <p>No approved requests</p>
           )}
         </TabsContent>
 
         <TabsContent value="rejected">
           {loading ? (
             <p>Loading...</p>
-          ) : rejected.length > 0 ? (
+          ) : filterBySearch(rejected).length > 0 ? (
             <div className="flex flex-wrap gap-4">
-              {rejected.map((u) => renderUserCard(u))}
+              {filterBySearch(rejected).map((u) => renderUserCard(u))}
             </div>
           ) : (
-            <p>No Rejected requests</p>
+            <p>No rejected requests</p>
           )}
         </TabsContent>
       </Tabs>
@@ -256,7 +299,7 @@ export default function AdminKycRequests() {
               No
             </Button>
             <Button
-            className="w-57 h-10 rounded-full font-bold border-black"
+              className="w-57 h-10 rounded-full font-bold border-black"
               onClick={() => {
                 if (currentUserId) updateKycStatus(currentUserId, "approved");
                 setConfirmDialogOpen(false);
@@ -282,8 +325,9 @@ export default function AdminKycRequests() {
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             required
+            maxLength={150}
             className="text-black font-semibold"
-          ></Input>
+          />
           <div className="flex justify-end gap-2 mt-4">
             <Button
               variant="outline"
@@ -293,7 +337,7 @@ export default function AdminKycRequests() {
               Cancel
             </Button>
             <Button
-             className="w-57 h-10 rounded-full font-bold border-black"
+              className="w-57 h-10 rounded-full font-bold border-black"
               onClick={() => {
                 if (!rejectReason.trim())
                   return toast.error("Reason is required to reject!");

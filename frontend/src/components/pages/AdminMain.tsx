@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { LogOut } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,27 +15,27 @@ import {
 function AdminMain() {
   const { logout } = useAuth();
   return (
-    <div className="flex">
-      <div className="flex flex-col w-56 max-w-80 min-h-screen bg-[#001336] text-white py-10 px-4 gap-4 font-head">
+    <div className="flex h-screen ">
+      <div className="flex flex-col w-56 max-w-80 bg-[#001336] text-white py-10 px-4 gap-4 font-head">
         {/* Dashboard */}
         <NavLink
-          to="/admin/dashboard"
+          to="/admin/loans"
           className={({ isActive }) =>
-            `p-4  rounded-full flex flex-col items-start justify-center font-semibold transition-all duration-200 w-34 h-13 ${
+            `p-4  rounded-full flex flex-col items-start justify-center font-semibold transition-all duration-200 w-38 h-13 ${
               isActive
                 ? "bg-white text-blue-950 shadow-sm"
                 : "hover:bg-blue-900 hover:text-white"
             }`
           }
         >
-          Dashboard
+          Loan Requests
         </NavLink>
 
         {/* Loans */}
         <NavLink
           to="/admin/kyc-requests"
           className={({ isActive }) =>
-            `flex flex-col items-start justify-center p-4 rounded-full text-center font-semibold transition-all duration-200 w-34 h-13 ${
+            `flex flex-col items-start justify-center p-4 rounded-full text-center font-semibold transition-all duration-200 w-38 h-13 ${
               isActive
                 ? "bg-white text-blue-950 shadow-sm"
                 : "hover:bg-blue-900 hover:text-white"
@@ -47,15 +47,21 @@ function AdminMain() {
 
         {/* Settings */}
         <NavLink
-          to="#"
-          className="flex flex-col items-start justify-center p-4 rounded-full text-center font-semibold transition-all duration-200 w-34 h-13"
+          to="/admin/analytics"
+          className={({ isActive }) =>
+            `flex flex-col items-start justify-center p-4 rounded-full text-center font-semibold transition-all duration-200 w-38 h-13 ${
+              isActive
+                ? "bg-white text-blue-950 shadow-sm"
+                : "hover:bg-blue-900 hover:text-white"
+            }`
+          }
         >
-          Settings
+          Loan Analytics
         </NavLink>
         <AlertDialog>
           <div className="flex flex-1 items-end justify-start px-2 ">
             <AlertDialogTrigger asChild>
-              <div className="flex  cursor-pointer gap-2">
+              <div className="flex  cursor-pointer gap-2 hover:text-red-400">
                 <LogOut />
                 <h1 className="font-bold">Log-out</h1>
               </div>
@@ -82,9 +88,9 @@ function AdminMain() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <div className="w-full min-h-screen bg-[#F8F9FA] px-10 py-8 font-head">
+      <div className="w-full bg-[#F8F9FA]">
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between p-4">
           <div>
             <h1 className="text-2xl font-semibold">Hi Admin</h1>
             <p className="text-muted-foreground text-xl">

@@ -8,6 +8,8 @@ import (
 type Repayment struct {
 	ID            uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	LoanID        uuid.UUID  `gorm:"type:uuid;not null" json:"loanId"` // foreign key
+	LoanCode    string    `gorm:"index;not null" json:"loanCode"` 
+	BorrowerID	  string  `gorm:"type:varchar(24);not null" json:"borrowerId"`
 	MonthNumber   int        `gorm:"not null" json:"monthNumber"`      // EMI number
 	Amount        float64    `gorm:"not null" json:"amount"`           // EMI amount
 	DueDate       time.Time  `gorm:"not null" json:"dueDate"`          // Payment due date
@@ -17,5 +19,7 @@ type Repayment struct {
 	PaidDate      *time.Time `json:"paidDate,omitempty"`               // when user pays
 	CreatedAt     time.Time  `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt     time.Time  `gorm:"autoUpdateTime" json:"updatedAt"`
+	LoanAmount    float64	 `gorm:"not null" json:"loanAmount"`
+	LoanType      string      `gorm:"size:50;not null" json:"loanType"`
 
 }

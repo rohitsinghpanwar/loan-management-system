@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 interface User {
   _id: string;
@@ -64,7 +64,7 @@ export default function RouteProtector({
         // 🔹 Admin route logic
         if (currentUser.role === "admin") {
           if (window.location.pathname === "/" || !window.location.pathname.startsWith("/admin")) {
-            targetPath = "/admin/dashboard";
+            targetPath = "/admin/loans";
           }
         }
 

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import OtpVerification from "./OtpVerification";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
   const [identifier, setIdentifier] = useState("");

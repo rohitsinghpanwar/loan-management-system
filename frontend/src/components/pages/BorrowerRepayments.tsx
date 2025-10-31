@@ -11,6 +11,7 @@ interface RepaymentItem {
   repaid: number;
   dueDate: string;
   status?: string;
+  paidDate:string;
 }
 
 interface RepaymentsProps {
@@ -20,21 +21,20 @@ interface RepaymentsProps {
 const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
   const [repayments, setRepayments] = useState<RepaymentItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [repay,setRepay]=useState(false)
+  const [repay, setRepay] = useState(false);
+
   const fetchRepayments = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `${
-          import.meta.env.VITE_GO_URI
-        }loans/repayments/${loanId}`,
+        `${import.meta.env.VITE_GO_URI}loans/repayments/${loanId}`,
         {
           headers: {
             "x-api-key": `${import.meta.env.VITE_BORROWER_SECRET_KEY}`,
           },
         }
       );
-      console.log(res.data.repayments)
+
       const mappedRepayments: RepaymentItem[] = res.data.repayments.map(
         (item: any) => ({
           id: item.ID,
@@ -44,6 +44,7 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
           repaid: item.status === "paid" ? item.amount : 0,
           dueDate: item.dueDate,
           status: item.status,
+          paidDate:item.paidDate,
         })
       );
 
@@ -73,28 +74,24 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
     const diffMs = dueDate.getTime() - now.getTime();
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   };
-  console.log(import.meta.env.VITE_BORROWER_SECRET_KEY)
+
   const handleRepayNow = async (id: string) => {
-    console.log("Repay now clicked for item:", id);
-    setRepay(true)
+    setRepay(true);
     try {
-      const res=await axios.patch(
-        `${
-          import.meta.env.VITE_GO_URI
-        }loans/repayments/repay/${id}`,{},
+      await axios.patch(
+        `${import.meta.env.VITE_GO_URI}loans/repayments/repay/${id}`,
+        {},
         {
           headers: {
             "x-api-key": `${import.meta.env.VITE_BORROWER_SECRET_KEY}`,
           },
         }
       );
-      console.log(res)
-      fetchRepayments()
+      await fetchRepayments(); // Refresh repayments
     } catch (error) {
-      console.log(error)
-    }
-    finally{
-      setRepay(false)
+      console.error(error);
+    } finally {
+      setRepay(false);
     }
   };
 
@@ -115,16 +112,21 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
       </div>
     );
 
+  // Get first unpaid repayment index
+  const firstUnpaidIndex = repayments.findIndex(r => r.status !== "paid");
+
   return (
     <div className="w-full h-full flex flex-col">
-      {/* Scrollable list */}
-      <div className="overflow-y-auto flex-1 pb-18">
+      <div className="overflow-y-auto flex-1">
         <div className="relative">
           {repayments.map((item, index) => {
             const daysLeft = getDaysLeft(item.dueDate);
             const isPaid = item.status === "paid";
 
-            // Define badge + border colors
+            // Only allow repay if this is the first unpaid repayment
+            const canRepay = !isPaid && index === firstUnpaidIndex;
+
+            // Badge and border colors
             const borderColor = isPaid
               ? "border-emerald-500"
               : daysLeft <= 3
@@ -146,25 +148,24 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
               : daysLeft <= 31
               ? `${daysLeft} days left`
               : format(parseISO(item.dueDate), "dd/MM/yyyy");
+
             const totalRepaid = repayments
-            .filter((r) => r.status === "paid")
-            .reduce((sum, r) => sum + r.totalAmount, 0);
+              .filter((r) => r.status === "paid")
+              .reduce((sum, r) => sum + r.totalAmount, 0);
+
             return (
-              <div
-                key={item.id}
-                className="relative flex flex-col items-center"
-              >
+              <div key={item.id} className="relative flex flex-col items-center">
                 {/* Connector line between repayments */}
                 {index < repayments.length - 1 && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-37 h-[33%] flex flex-col items-center justify-between z-10">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-38 h-[33%] flex flex-col items-center justify-between z-10">
                     <div className="w-2 h-2 bg-[#858699] rounded-full"></div>
                     <div className="w-px flex-1 border-l-2 border-dashed border-[#858699] z-0"></div>
                     <div className="w-2 h-2 bg-[#858699] rounded-full"></div>
                   </div>
                 )}
 
-                {/* Date / Status Badge (Top of Card) */}
-                <div className="relative right-40 ">
+                {/* Date / Status Badge */}
+                <div className="relative right-40">
                   <span
                     className={`inline-block px-3 py-1 text-xs font-bold text-white rounded-t-md ${badgeColor}`}
                   >
@@ -174,19 +175,22 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
 
                 {/* Card */}
                 <div
-                  className={`relative z-10 w-full max-w-md border ${borderColor} rounded-xl p-4  hover:shadow-md transition-shadow mb-10 flex flex-col gap-3`}
+                  className={`relative z-10 w-full max-w-md border ${borderColor} rounded-xl p-4 hover:shadow-md transition-shadow mb-10 flex flex-col gap-3`}
                 >
-                  {/* Bank Name and Repay Button */}
                   <div className="flex items-center justify-between mb-4 mt-3">
                     <span className="text-sm font-bold text-gray-900">
                       {item.bankName}
                     </span>
 
-                    {!isPaid && (
+                    {isPaid ?(<p className="font-semibold">Paid on: {format(parseISO(item.paidDate),"dd-MM-yyyy")}</p>): (
                       <button
                         onClick={() => handleRepayNow(item.id)}
-                        className="flex items-center text-sm font-bold text-gray-900 hover:text-gray-700 transition-colors"
-                        disabled={repay}
+                        className={`flex items-center text-sm font-bold transition-colors ${
+                          canRepay
+                            ? "text-gray-900 hover:text-gray-700"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
+                        disabled={!canRepay || repay}
                       >
                         Repay Now
                         <ChevronRight className="w-4 h-4 ml-0.5" />
@@ -194,7 +198,6 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
                     )}
                   </div>
 
-                  {/* Amount Details */}
                   <div className="flex items-start justify-between bg-[#FAFAFA] -m-4 px-4 py-1 rounded-b-xl">
                     <div>
                       <div className="text-2xl font-semibold text-gray-900 mb-1">
@@ -218,7 +221,7 @@ const BorrowerRepayments: React.FC<RepaymentsProps> = ({ loanId }) => {
                       <div
                         className={`text-2xl font-semibold mb-1 text-[#2A9266]`}
                       >
-                        {formatCurrency(totalRepaid) }
+                        {formatCurrency(totalRepaid)}
                       </div>
                       <div className="text-[10px] text-gray-400 uppercase tracking-wide">
                         REPAID

@@ -8,7 +8,7 @@ export const verifyAccessToken = (req: Request, res: Response, next: NextFunctio
 
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
-    (req as any).user = decoded; // 👈 attaches _id, etc
+    (req as any).user = decoded; // attaches _id, etc
     next();
   } catch (err) {
     console.error("JWT verification failed:", err);

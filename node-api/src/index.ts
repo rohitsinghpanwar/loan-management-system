@@ -33,7 +33,7 @@ app.use("/api/v1/borrower/",userRouter)
 const startServer = async () => {
   await connectMongo(); // Connect to MongoDB first
   app.listen(PORT, () => {
-    console.log(`🚀 Node server running on http://localhost:${PORT}`);
+    console.log(` Node server running on http://localhost:${PORT}`);
   });
 };
 

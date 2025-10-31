@@ -159,16 +159,6 @@ const login = async (req: Request, res: Response) => {
         ? "Email not registered, please signup"
         : "Phone not registered, please signup",
     });
-
-  // Determine which value to send OTP to (use phone if available, else email)
-  // const otpTarget = user.phone || user.profile?.email;
-  // if (!otpTarget)
-  //   return res
-  //     .status(400)
-  //     .json({ message: "No phone or email linked for OTP" });
-
-  // // Send OTP
-  // console.log("the target is",otpTarget)
   const { otp, fromCache } = await sendOtp(identifier);
 
   return res.status(200).json({
@@ -195,13 +185,6 @@ const verifyOtpLogin = async (req: Request, res: Response) => {
   if (!user)
     return res.status(404).json({ message: "User not found, please signup" });
 
-  // // Use phone if exists, otherwise email
-  // const otpTarget = user.phone || user.profile?.email;
-
-  // if (!otpTarget)
-  //   return res.status(400).json({ message: "No phone or email linked for OTP" });
-
-  // Verify OTP
   const { valid, message } = await verifyOtp(identifier, otp);
   if (!valid)
     return res.status(400).json({ message: "Not a valid identifier" });
@@ -316,6 +299,24 @@ const kycRequests = async (req: Request, res: Response) => {
   }
 };
 
+const borrowerProfile=async(req:Request,res:Response)=>{
+  try {
+    const userId=(req as any).user?._id
+    if(!userId){
+      return res.status(400).json({message:"User id not found"})
+    }
+    const user=await User.findById(userId).select("profile phone kyc.kyc_status").lean()
+    if(!user){
+      return res.status(404).json({message:"User not found"})
+    }
+    return res.status(200).json({message:"User Profile found",user})
+
+  } catch (error) {
+    console.error("Error in finding in profile:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+}
+
 export {
   signup,
   verifyOtpSignup,
@@ -327,4 +328,5 @@ export {
   logOut,
   changeKycStatus,
   kycRequests,
+  borrowerProfile
 };

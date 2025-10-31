@@ -1,4 +1,7 @@
-
+@font-face {
+  font-family: robbert;
+  src: url("./assets/fonts/robbert.otf");
+}
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -6,7 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* --font-head: Roobert TRIAL,sans-serif; */
+  --font-robbert:robbert,"sans-serif";
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

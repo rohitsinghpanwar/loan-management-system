@@ -5,7 +5,7 @@ import { DatePicker } from "./DatePicker";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../ui/spinner";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   Select,
   SelectContent,

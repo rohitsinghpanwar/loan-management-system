@@ -17,7 +17,7 @@ export const uploadOnCloudinary = async (
   try {
     if (!fileInput) throw new Error("No file provided for upload");
 
-    // 🔹 Handle Buffer uploads (via multer memoryStorage)
+    // Handle Buffer uploads (via multer memoryStorage)
     if (Buffer.isBuffer(fileInput)) {
       return await new Promise<UploadApiResponse>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -32,7 +32,7 @@ export const uploadOnCloudinary = async (
       });
     }
 
-    // 🔹 Handle file path uploads (from diskStorage)
+    // Handle file path uploads (from diskStorage)
     if (typeof fileInput === "string" && fs.existsSync(fileInput)) {
       const response = await cloudinary.uploader.upload(fileInput, {
         resource_type: "auto",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import { toast } from "sonner";
 interface Props {
   setPhone: (phone: string) => void;
   closeDialog: () => void;
@@ -14,10 +15,10 @@ function ChangePhoneNumber({ setPhone, closeDialog }: Props) {
     if (phoneInput.length === 10) {
       setPhone(phoneInput); // update parent
       if (closeDialog) closeDialog(); // close dialog
-      alert(`OTP will be sent to ${phoneInput}`);
+      toast.success(`OTP will be sent to ${phoneInput}`);
       
     } else {
-      alert("Please enter a valid 10-digit number");
+      toast.error("Please enter a valid 10-digit number");
     }
     setLoading(false)
   };

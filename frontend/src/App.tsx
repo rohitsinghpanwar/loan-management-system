@@ -6,14 +6,19 @@ import Profile from "./components/pages/Profile";
 import KycUpload from "./components/pages/KycUpload";
 import KycReview from "./components/pages/KycReview";
 import BorrowerDashboard from "./components/pages/BorrowerDashboard";
+import BorrowerApplyLoan from "./components/pages/BorrowerApplyLoan";
 import BorrowerLoans from "./components/pages/BorrowerLoans";
 import BorrowerMain from "./components/pages/BorrowerMain";
 import AdminMain from "./components/pages/AdminMain";
-import AdminDashboard from "./components/pages/AdminDashboard";
-import KYCRequests from "./components/pages/AdminKycRequests";
+import AdminLoanRequests from "./components/pages/AdminLoanRequests";
+import AdminKycRequests from "./components/pages/AdminKycRequests";
 import NotFound from "./components/pages/NotFound";
+import BorrowerEligibility from "./components/pages/BorrowerEligibility";
 import RouteProtector from "./components/pages/RouteProtector";
-
+import BorrowerUpcomingRepayments from "./components/pages/BorrowerUpcomingRepayments";
+import BorrowerProfile from "./components/pages/BorrowerProfile";
+import AdminLoanDetails from "./components/pages/AdminLoanDetails";
+import AdminLoansStats from "./components/pages/AdminLoansAnalytics";
 function App() {
   return (
     <>
@@ -70,7 +75,11 @@ function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<BorrowerDashboard />} />
-          <Route path="apply-loan" element={<BorrowerLoans />} />
+          <Route path="apply-loan" element={<BorrowerApplyLoan />} />
+          <Route path="eligible" element={<BorrowerEligibility />} />
+          <Route path="repayments" element={<BorrowerUpcomingRepayments />} />
+          <Route path="loans" element={<BorrowerLoans showAll={true}/>}/>
+          <Route path="profile" element={<BorrowerProfile/>}/>
         </Route>
 
         {/* Admin routes */}
@@ -82,9 +91,13 @@ function App() {
             </RouteProtector>
           }
         >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="kyc-requests" element={<KYCRequests />} />
+          <Route index element={<Navigate to="loans" replace />} />
+          <Route path="loans" element={<AdminLoanRequests />} />
+          <Route path="kyc-requests" element={<AdminKycRequests />} />
+          <Route path="analytics" element={<AdminLoansStats />} />
+          <Route path="/admin/loans/:id" element={<AdminLoanDetails />} />
+
+
         </Route>
 
         {/* Fallback */}

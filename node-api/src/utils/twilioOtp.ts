@@ -16,6 +16,7 @@ if (!accountSid || !authToken || !verifyServiceSid) {
 const client = twilio(accountSid, authToken);
 
 const IS_DEV = process.env.NODE_ENV !== "production";
+console.log(IS_DEV)
 
 /**
  * Send OTP to a phone or email
@@ -41,12 +42,11 @@ export const sendOtp = async (identifier: string) => {
     const verification = await client.verify.v2
       .services(verifyServiceSid)
       .verifications.create({ to: `+91${identifier}`, channel: "sms" });
-    console.log("✅ OTP sent via Twilio:", verification.sid);
+    console.log("OTP sent via Twilio:", verification.sid);
     otp = verification.sid;
   } else {
     // email production placeholder
     // later replace with Nodemailer logic
-    console.log(`[PROD] Send OTP via email to ${identifier}`);
     otp = Math.floor(100000 + Math.random() * 900000).toString(); // temp
 
     const transporter=nodemailer.createTransport({
@@ -56,7 +56,7 @@ export const sendOtp = async (identifier: string) => {
         pass:process.env.EMAIL_PASS
       }
     })
-
+    console.log(`[PROD] Send OTP via email to ${identifier} - ${otp}`);
     const emailOptions={
       from:process.env.EMAIL_USER,
       to:identifier,

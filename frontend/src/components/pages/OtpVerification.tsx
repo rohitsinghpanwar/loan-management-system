@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Spinner } from "../ui/spinner";
 import { toast } from "sonner";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 type OtpVerificationProps = {
   mode: "login" | "signup";
   referral?: string;
