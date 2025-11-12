@@ -5,7 +5,7 @@ A modern, full-stack **Loan Management System** built with **React + TypeScript 
 
 ---
 
-## ⚙️ Tech 
+## ⚙️ Tech Stack
 
 ### 🖥️ Frontend
 - **React 18 + TypeScript**
